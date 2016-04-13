@@ -61,19 +61,26 @@ class hist_plot():
         """
         eps = 1e-9/2
         N = len(self.fnames)
-        ds = list(self.factors(N))
+
+        ds = list()
+        count = 0
+        while len(ds) == 0:
+            ds = list(self.factors(N+count))
+            count += 1
+            print ds
+        
         if len(ds) == 1:
             ds = list((ds[0], ds[0]))
-        fig = plt.figure(figsize=(4*ds[1], 4*ds[0]))
-        bl = ds[1]*(ds[0]-1)
+        fig = plt.figure(figsize=(4*ds[-1], 4*ds[0]))
+        bl = ds[-1]*(ds[0]-1)
         for idx, key in enumerate(self.data.keys()):
-            ax = plt.subplot(ds[0], ds[1], idx+1)
+            ax = plt.subplot(ds[0], ds[-1], idx+1)
             plt.hold(True)
             xs = self.data[key]['xs']
             pdfs = self.data[key]['pdfs']
             for key2 in pdfs:
                 if not self.color:
-                    plt.plot(xs+1, pdfs[key2]+eps, alpha=0.4, color='#888888')
+                    plt.plot(xs+1, pdfs[key2]+eps, alpha=0.07, color='#000000')
                 else:
                     plt.plot(xs+1, pdfs[key2]+eps, alpha=0.4)
             plt.title(key)
@@ -88,9 +95,10 @@ class hist_plot():
         plt.show()
         
         
-    def factors(self, N):    
-        return set(reduce(list.__add__, 
-                    ([i, N//i] for i in range(1, int(N**0.5) + 1) if N % i == 0 and i > 1)))
+    def factors(self, N): 
+        return set([item for subitem in 
+                    [(i, N//i) for i in range(1, int(N**0.5) + 1) if N % i == 0 and i > 1]
+                    for item in subitem])
         
 #     def plotting(self, xl, xh):
 #         """
