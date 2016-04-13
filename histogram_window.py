@@ -21,7 +21,9 @@
 
 from ipywidgets import widgets
 import matplotlib.pyplot as plt
+import numpy as np
 import pickle
+import sys
 
 
 class histogram_windowing():
@@ -47,17 +49,23 @@ class histogram_windowing():
         """
         Define interactive plot function for altering pdf range
         """
+        # eps = np.min([np.min(self.tpdfs[key]) for key in self.tpdfs.keys() if np.min(self.tpdfs[key]) > 0])
+        #print eps
+        eps = 1e-9/2
         fig = plt.figure(figsize=(8, 6))
+        ax = plt.subplot(111)
         plt.hold(True)
         for key in self.tpdfs.keys():
             if not self.color:
-                plt.plot(self.txs[xl:xh], self.tpdfs[key][xl:xh], alpha=0.4,
+                plt.plot(self.txs[xl:xh]+1, self.tpdfs[key][xl:xh]+eps, alpha=0.4,
                          color='#888888')
             else:
-                plt.plot(self.txs[xl:xh], self.tpdfs[key][xl:xh], alpha=0.4)
+                plt.plot(self.txs[xl:xh]+1, self.tpdfs[key][xl:xh]+eps, alpha=0.4)
             plt.title(self.name + ' histograms')
         plt.xlabel('Voxel Intensity')
         plt.ylabel('Probability Density')
+        ax.set_xscale('log')
+        ax.set_yscale('log')
         plt.show()
         print "X-Min:", self.txs[xl]
         print "X-Max:", self.txs[xh]
