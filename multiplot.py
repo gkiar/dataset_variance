@@ -28,7 +28,7 @@ import sys
 
 class hist_plot():
 
-    def __init__(self, fnames, names, color=False):
+    def __init__(self, fnames, names, figname=None, color=False):
         """
         Plots multiple populations of histograms in the same figure.
         Expects:
@@ -39,6 +39,7 @@ class hist_plot():
         """
         self.fnames = fnames
         self.names = names
+        self.figname = figname
         self.color = color
         self.gd()
         self.plot()
@@ -82,6 +83,8 @@ class hist_plot():
             ax.set_xscale('log')
             ax.set_yscale('log')
         plt.tight_layout()
+        if self.figname is not None:
+            plt.savefig(self.figname)
         plt.show()
         
         
