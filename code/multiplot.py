@@ -20,6 +20,7 @@
 # Email: gkiar@jhu.edu
 
 from collections import OrderedDict
+from scipy.stats import gaussian_kde
 import matplotlib.pyplot as plt
 import numpy as np
 import pickle
@@ -132,7 +133,6 @@ class feature_plot():
         """
         Setup plot shape, etc.
         """
-        eps = 1e-9/2
         N = len(self.names)
         ds = list()
         count = 0
@@ -183,7 +183,7 @@ class feature_plot():
         ax = plt.subplot(1,1,1)
         plt.hold(True)
         for idx, set in enumerate(self.data.keys()):
-            plt.scatter([idx] * len(self.data[set].values()),self.data[set].values(), alpha=0.1, color='#000000')
+            plt.scatter(self.rand_jitter( [idx]*len(self.data[set].values()) ),self.data[set].values(), alpha=0.1, color='#000000')
 
         plt.title(self.figtitle, y = 1.04)
         plt.ylabel('Count')
@@ -205,9 +205,12 @@ class feature_plot():
         """
         Plots series of histograms in a single figure
         """
-        eps = 1e-9/2
-        N = len(self.fnames)
 
+        """
+        Set up plotting area
+        """
+        eps = 1e-9/2
+        N = len(self.names)
         ds = list()
         count = 0
         while len(ds) == 0:
@@ -219,27 +222,31 @@ class feature_plot():
             ds = list((ds[0], ds[0]))
         fig = plt.figure(figsize=(4*ds[-1], 4*ds[0]))
         bl = ds[-1]*(ds[0]-1)
-        for idx, key in enumerate(self.data.keys()):
+        
+        """
+        Actually plot things
+        """
+        for idx, set in enumerate(self.data.keys()):
             ax = plt.subplot(ds[0], ds[-1], idx+1)
             plt.hold(True)
-            xs = self.data[key]['xs']
-            pdfs = self.data[key]['pdfs']
-            for key2 in pdfs:
-                if not self.color:
-                    plt.plot(xs+1, pdfs[key2]+eps, alpha=0.07, color='#000000')
-                else:
-                    plt.plot(xs+1, pdfs[key2]+eps, alpha=0.4)
-            plt.title(key)
+            for subj in self.data[set]:
+                dens = gaussian_kde(self.data[set][subj])
+                x = np.linspace(0, 1.2*np.max(self.data[set][subj]), 1000)
+                plt.plot(x, dens.pdf(x), color='#000000', alpha=0.07)
+            plt.title(set)
             if idx == bl:
-                plt.xlabel('Voxel Intensity')
-                plt.ylabel('Probability Density')
-            ax.set_xscale('log')
-            ax.set_yscale('log')
-        plt.tight_layout()
+                plt.ylabel('Density')
+                plt.xlabel(self.figtitle)
+
+            plt.tight_layout()
+
         if self.figname is not None:
             plt.savefig(self.figname)
         plt.show()
-        
+    
+    def rand_jitter(self, arr):
+        stdev = .03*(max(arr)-min(arr)+2)
+        return arr + np.random.randn(len(arr)) * stdev
         
     def factors(self, N): 
         return set([item for subitem in 
