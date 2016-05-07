@@ -57,6 +57,8 @@ class feature_plot():
             self.bar_plot()
         elif plot_mode == 'scatter' :
             self.scatter_plot()
+        elif plot_mode == 'series' :
+            self.series_plot()
         else :
             self.hist_plot()
 
@@ -189,6 +191,64 @@ class feature_plot():
         if self.fig_outfile is not None:
             plt.savefig(self.fig_outfile)
         plt.show()
+        
+        
+    def series_plot(self):
+        """
+        Plots series of histograms in a single figure
+        """
+
+        """
+        Set up plotting area
+        """
+        eps = 1e-9/2
+        N = len(self.names)
+        ds = list()
+        count = 0
+        while len(ds) == 0:
+            ds = list(self.factors(N+count))
+            count += 1
+        
+        if len(ds) == 1:
+            ds = list((ds[0], ds[0]))
+        fig = plt.figure(figsize=(4*ds[-1], 4*ds[0]))
+        bl = ds[-1]*(ds[0]-1)
+        
+        """
+        Actually plot things
+        """
+        for idx, set in enumerate(self.data.keys()):
+            ax = plt.subplot(ds[0], ds[-1], idx+1)
+            plt.hold(True)
+            for subj in self.data[set]:
+                dens = self.data[set][subj]
+                x = np.linspace(1, len(self.data[set][subj]), len(self.data[set][subj]))
+                if self.scale_factor is not None:
+                    plt.plot(x/int(self.scale_factor), dens*int(self.scale_factor), color='#000000', alpha=0.07)
+                elif self.xscale is not None:
+                    plt.plot(x/int(self.xscale), dens, color='#000000', alpha=0.07)
+                elif self.yscale is not None:
+                    plt.plot(x, dens*int(self.yscale), color='#000000', alpha=0.07)
+                else:
+                    plt.plot(x, dens, color='#000000', alpha=0.07)
+            plt.title(set)
+            if self.axis_scale == 'log':
+                plt.xscale('log')
+
+            if idx == bl:
+                if self.ylab is not None:
+                    plt.ylabel(self.ylab)
+                if self.xlab is not None:
+                    plt.xlabel(self.xlab)
+
+                plt.tight_layout()
+
+        if self.fig_outfile is not None:
+            plt.savefig(self.fig_outfile)
+        plt.show()
+        
+        
+        
     
     def rand_jitter(self, arr):
         stdev = .03*(max(arr)-min(arr)+2)
