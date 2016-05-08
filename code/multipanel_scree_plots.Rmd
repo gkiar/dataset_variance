@@ -1,0 +1,68 @@
+---
+title: "Multi-Panel Scree Plots"
+author: "Greg Kiar"
+date: "April 23, 2016"
+output:
+  html_document:
+    fig_caption: yes
+    fig_height: 4
+    fig_width: 4
+    fig_retina: 2
+    highlight: pygments
+    keep_md: yes
+    number_sections: yes
+    theme: cerulean
+    toc: yes
+    toc_depth: 3
+    mode: standalone
+  pdf_document:
+    fig_caption: yes
+    keep_tex: yes
+    number_sections: yes
+---
+```{r echo=FALSE}
+source('/Users/gkiar/code/classes/upward-spiral/grelliam/code/getElbows.R')
+source('/Users/gkiar/code/classes/upward-spiral/grelliam/code/load_graphs.R')
+source('/Users/gkiar/code/classes/upward-spiral/grelliam/code/scree_with_elbows_utility.R')
+
+library(igraph)
+library(foreach)
+library(ggplot2)
+```
+
+Previously I showed how to compute a scree plot from this data. Now, in the interest of comparing results, I have processed many datasets using the same scree plot code and displayed them side by side.
+
+Though this analysis will be carried out across multiple scales, here we show the case for the Desikan atlas, only.
+```{r}
+name = c('KKI2009',
+         'MRN114',
+         'MRN1313',
+         'SWU4',
+         'BNU1',
+         'BNU3',
+         'NKI1',
+         'NKIENH')
+nodes = 1105
+path <- c('/Users/gkiar/code/classes/upward-spiral/grelliam/data/tal/KKI2009',
+          '/Users/gkiar/code/classes/upward-spiral/grelliam/data/tal/MRN114',
+          '/Users/gkiar/code/classes/upward-spiral/grelliam/data/tal/MRN1313',
+          '/Users/gkiar/code/classes/upward-spiral/grelliam/data/tal/SWU4',
+          '/Users/gkiar/code/classes/upward-spiral/grelliam/data/tal/BNU1',
+          '/Users/gkiar/code/classes/upward-spiral/grelliam/data/tal/BNU3',
+          '/Users/gkiar/code/classes/upward-spiral/grelliam/data/tal/NKI1',
+          '/Users/gkiar/code/classes/upward-spiral/grelliam/data/tal/NKIENH')
+
+```
+
+
+```{r, echo=FALSE, fig.width=10, fig.height=4}
+  par(mfrow=c(2,4))
+  botleft = 5
+  for (i in 1:length(name)){
+    if (i == botleft) {
+      scree_with_elbows(name[i], nodes, path[i], idx = 1)
+    } else {
+      scree_with_elbows(name[i], nodes, path[i])
+    }
+  }
+```
