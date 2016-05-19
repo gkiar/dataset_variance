@@ -1,12 +1,12 @@
 ### Summary of Datasets
 
-| Dataset | Link |  Rest to Populate... |
-|---------|------|----------------------|
-| KKI2009 | http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3020263/ | |
-| MRN 114 | emailed from Sephira | |
-| MRN1313 | NA | |
-| SWU4    | http://fcon_1000.projects.nitrc.org/indi/CoRR/html/swu_4.html | |
-| BNU1    | http://fcon_1000.projects.nitrc.org/indi/CoRR/html/bnu_1.html | |
-| BNU3    | http://fcon_1000.projects.nitrc.org/indi/CoRR/html/bnu_3.html | |
-| NKI1    | http://fcon_1000.projects.nitrc.org/indi/CoRR/html/nki_1.html | |
-| NKI-ENH | http://fcon_1000.projects.nitrc.org/indi/enhanced/mri_protocol.html | |
+| Dataset | Scanner | Ver |Structrual Sequence | Diffusion Sequence | Strength | B value(s) | N-Dir | N-B0s | N-Avg | N-Chan |
+|---------|---------|-----|--------------------|--------------------|----------|------------|-------|-------|-------|--------|
+| KKI2009 |  | [url](http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3020263/) | 
+| MRN 114 | Siemens TrioTim | syngo MR B13 [pdf](./) |
+| MRN1313 |         |     |                    |                    |          |            |       |       |       |        |
+| SWU4    | | [url](http://fcon_1000.projects.nitrc.org/indi/CoRR/html/swu_4.html) |
+| [BNU1]((http://fcon_1000.projects.nitrc.org/indi/CoRR/html/_static/scan_parameters/BNU_1_scantable.pdf))    | Siemens TrioTim | |    3D MPRAGE   |      EPI           | 3T       |  1000      | 30    | 1     | 1     | 12     |
+| [BNU3](http://fcon_1000.projects.nitrc.org/indi/CoRR/html/_static/scan_parameters/BNU_3_scantable.pdf)    | Siemens TrioTim | |    3D MPRAGE   |      EPI           | 3T       |  1000      | 64    | 1     | 1     | 12     |
+| [NKI1](http://fcon_1000.projects.nitrc.org/indi/CoRR/html/_static/scan_parameters/nki/nki_DTI.pdf)    | Siemens TrioTim | syngo MR B17 |   |      EPI           |  T       |  1500      | 137   |
+| NKI-ENH | | [url](http://fcon_1000.projects.nitrc.org/indi/enhanced/mri_protocol.html) |
