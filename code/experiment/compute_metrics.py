@@ -22,6 +22,7 @@
 from argparse import ArgumentParser
 from collections import OrderedDict
 from subprocess import Popen
+from scipy.stats import gaussian_kde
 
 import numpy as np
 import nibabel as nb
@@ -47,7 +48,8 @@ def loadGraphs(filenames, verb=False):
         if verb:
             print "Loading: " + files
         #  Adds graphs to dictionary with key being filename
-        gstruct[files] = nx.read_graphml(files)
+        fname = os.path.basename(files)
+        gstruct[fname] = nx.read_graphml(files)
     return gstruct
 
 
@@ -83,6 +85,7 @@ def driver(names, fs, outdir, atlas, verb=False):
     """
 
     #  Number of non-zero edges (i.e. binary edge count)
+    print "Computing: NNZ"
     nnz = OrderedDict()
     for idx, name in enumerate(names):
         nnz[name] = OrderedDict((subj, len(nx.edges(graphs[name][subj])))
@@ -90,34 +93,44 @@ def driver(names, fs, outdir, atlas, verb=False):
     write(outdir, 'nnz', nnz, atlas)
 
     #  Degree sequence
+    print "Computing: Degree Seuqence"
     deg = OrderedDict()
     for idx, name in enumerate(names):
-        deg[name] = OrderedDict((subj, np.array(nx.degree(graphs[name][subj]).values()))
-                                for subj in graphs[name])
+        temp_deg = OrderedDict((subj, np.array(nx.degree(graphs[name][subj]).values()))
+                               for subj in graphs[name])
+        deg[name] = density(temp_deg)
     write(outdir, 'degree', deg, atlas)
 
     #  Edge Weights
+    print "Computing: Edge Weight Sequence"
     ew = OrderedDict()
     for idx, name in enumerate(names):
-        ew[name] = OrderedDict((subj, [graphs[name][subj].get_edge_data(e[0], e[1])['weight']
-                               for e in graphs[name][subj].edges()])
-                               for subj in graphs[name])
+        temp_ew = OrderedDict((subj, [graphs[name][subj].get_edge_data(e[0], e[1])['weight']
+                              for e in graphs[name][subj].edges()])
+                              for subj in graphs[name])
+        ew[name] = density(temp_ew)
     write(outdir, 'edgeweight', ew, atlas)
 
     #   Clustering Coefficients
+    print "Computing: Clustering Coefficient Sequence"
     ccoefs = OrderedDict()
+    nxc = nx.clustering  # For PEP8 line length...
     for idx, name in enumerate(names):
-        ccoefs[name] = OrderedDict((subj, nx.clustering(graphs[name][subj]).values())
-                                   for subj in graphs[name])
+        temp_cc = OrderedDict((subj, nxc(graphs[name][subj]).values())
+                              for subj in graphs[name])
+        ccoefs[name] = density(temp_cc)
     write(outdir, 'ccoefs', ccoefs, atlas)
 
     # Scan Statistic-1
+    print "Computing: Scan Statistic-1 Sequence"
     ss1 = OrderedDict()
     for idx, name in enumerate(names):
-        ss1[name] = scan_statistic(graphs[name], 1)
+        temp_ss1 = scan_statistic(graphs[name], 1)
+        ss1[name] = density(temp_ss1)
     write(outdir, 'ss1', ss1, atlas)
 
     # Eigen Values
+    print "Computing: Eigen Value Sequence"
     laplacian = OrderedDict()
     eigs = OrderedDict()
     for idx, name in enumerate(names):
@@ -128,10 +141,13 @@ def driver(names, fs, outdir, atlas, verb=False):
     write(outdir, 'eigs', eigs, atlas)
 
     # Betweenness Centrality
+    print "Computing: Betweenness Centrality Sequence"
     centrality = OrderedDict()
+    nxbc = nx.algorithms.betweenness_centrality  # For PEP8 line length...
     for idx, name in enumerate(names):
-        centrality[name] = OrderedDict((subj, nx.algorithms.betweenness_centrality(graphs[name][subj]).values())
-                                       for subj in graphs[name])
+        temp_bc = OrderedDict((subj, nxbc(graphs[name][subj]).values())
+                              for subj in graphs[name])
+        centrality[name] = density(temp_bc)
     write(outdir, 'centrality', centrality, atlas)
 
 
@@ -150,11 +166,29 @@ def scan_statistic(mygs, i):
         g = mygs[key]
         tmp = np.array(())
         for n in g.nodes():
-            subgraph = nx.ego_graph(g, n, radius=i)
-            tmp = np.append(tmp, np.sum([subgraph.get_edge_data(e[0], e[1])['weight']
-                            for e in subgraph.edges()]))
+            sg = nx.ego_graph(g, n, radius=i)
+            tmp = np.append(tmp, np.sum([sg.get_edge_data(e[0], e[1])['weight']
+                            for e in sg.edges()]))
         ss[key] = tmp
     return ss
+
+
+def density(data):
+    """
+    Computes density for metrics which return vectors
+
+    Required parameters:
+        data:
+            - Dictionary of the vectors of data
+    """
+    density = OrderedDict()
+    xs = OrderedDict()
+    for subj in data:
+        dens = gaussian_kde(data[subj])
+        xs[subj] = np.linspace(0, 1.2*np.max(data[subj]), 1000)
+        density[subj] = dens.pdf(xs[subj])
+
+    return {"xs": xs, "pdfs": density}
 
 
 def write(outdir, metric, data, atlas):
