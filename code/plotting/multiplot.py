@@ -20,12 +20,9 @@
 # Email: gkiar@jhu.edu
 
 from collections import OrderedDict
-from scipy.stats import gaussian_kde
 import matplotlib.pyplot as plt
 import numpy as np
-import pickle
 import sys
-
 
 
 class feature_plot():
@@ -85,11 +82,11 @@ class feature_plot():
         """
         Actually plot things
         """
-        for idx, set in enumerate(self.data.keys()):
+        for idx, sset in enumerate(self.data.keys()):
             ax = plt.subplot(ds[0], ds[-1], idx+1)
             plt.hold(True)
-            plt.bar(range(len(self.data[set])),self.data[set].values(), alpha=0.7, color='#888888')
-            plt.title(set, y = 1.04)
+            plt.bar(range(len(self.data[sset])),self.data[sset].values(), alpha=0.7, color='#888888')
+            plt.title(sset, y = 1.04)
             if idx == bl:
                 plt.ylabel('Count')
                 plt.xlabel('Graph')
@@ -119,8 +116,8 @@ class feature_plot():
         """
         ax = plt.subplot(1,1,1)
         plt.hold(True)
-        for idx, set in enumerate(self.data.keys()):
-            plt.scatter(self.rand_jitter( [idx]*len(self.data[set].values()) ),self.data[set].values(), alpha=0.1, color='#000000')
+        for idx, sset in enumerate(self.data.keys()):
+            plt.scatter(self.rand_jitter( [idx]*len(self.data[sset].values()) ),self.data[sset].values(), alpha=0.1, color='#000000')
 
         plt.title(self.figtitle, y = 1.04)
         plt.ylabel('Count')
@@ -162,21 +159,24 @@ class feature_plot():
         """
         Actually plot things
         """
-        for idx, set in enumerate(self.data.keys()):
+        for idx, sset in enumerate(self.data.keys()):
             ax = plt.subplot(ds[0], ds[-1], idx+1)
             plt.hold(True)
-            for subj in self.data[set]:
-                dens = gaussian_kde(self.data[set][subj])
-                x = np.linspace(0, 1.2*np.max(self.data[set][subj]), 1000)
+            for subj in self.data[sset]['pdfs']:
+                dens = self.data[sset]['pdfs'][subj]
+                x = self.data[sset]['xs'][subj]
                 if self.scale_factor is not None:
-                    plt.plot(x/int(self.scale_factor), dens.pdf(x)*int(self.scale_factor), color='#000000', alpha=0.07)
+                    plt.plot(x/int(self.scale_factor), dens*int(self.scale_factor), color='#000000', alpha=0.07)
                 elif self.xscale is not None:
-                    plt.plot(x/int(self.xscale), dens.pdf(x), color='#000000', alpha=0.07)
+                    plt.plot(x/int(self.xscale), dens, color='#000000', alpha=0.07)
                 elif self.yscale is not None:
-                    plt.plot(x, dens.pdf(x)*int(self.yscale), color='#000000', alpha=0.07)
+                    plt.plot(x, dens*int(self.yscale), color='#000000', alpha=0.07)
                 else:
-                    plt.plot(x, dens.pdf(x), color='#000000', alpha=0.07)
-            plt.title(set)
+                    plt.plot(x, dens, color='#000000', alpha=0.07)
+
+            if self.xlims is not None:
+                plt.xlim(self.xlims)
+            plt.title(sset)
             if self.axis_scale == 'log':
                 plt.xscale('log')
 
@@ -187,6 +187,8 @@ class feature_plot():
                     plt.xlabel(self.xlab)
 
                 plt.tight_layout()
+
+        plt.suptitle(self.figtitle, y = 1.04, size=20)
 
         if self.fig_outfile is not None:
             plt.savefig(self.fig_outfile)
