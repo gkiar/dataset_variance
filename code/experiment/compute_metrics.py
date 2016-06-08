@@ -52,6 +52,27 @@ def loadGraphs(filenames, verb=False):
         gstruct[fname] = nx.read_graphml(files)
     return gstruct
 
+def constructGraphDict(names, fs, verb=False):
+    """
+    Given a set of files and a directory to put things, loads graphs.
+
+    Required parameters:
+        names:
+            - List of names of the datasets
+        fs:
+            - Dictionary of lists of files in each dataset
+    Optional parameters:
+        verb:
+            - Toggles verbose output statements
+    """
+    #  Loads graphs into memory for all datasets
+    graphs = OrderedDict()
+    for idx, name in enumerate(names):
+        if verb:
+            print "Loading Dataset: " + name
+        # The key for the dictionary of graphs is the dataset name
+        graphs[name] = loadGraphs(fs[name], verb=verb)
+    return graphs
 
 def driver(names, fs, outdir, atlas, verb=False):
     """
@@ -72,17 +93,8 @@ def driver(names, fs, outdir, atlas, verb=False):
         verb:
             - Toggles verbose output statements
     """
-    #  Loads graphs into memory for all datasets
-    graphs = OrderedDict()
-    for idx, name in enumerate(names):
-        if verb:
-            print "Loading Dataset: " + name
-        # The key for the dictionary of graphs is the dataset name
-        graphs[name] = loadGraphs(fs[name], verb=verb)
 
-    """
-    Now we start doing statistics...
-    """
+    graphs = constructGraphDict(names, fs, verb=verb)
 
     #  Number of non-zero edges (i.e. binary edge count)
     print "Computing: NNZ"
