@@ -125,11 +125,12 @@ class feature_plot():
         ax.set_xticklabels(self.names, rotation=40)
         plt.xlabel('Dataset')
         plt.xlim([-0.5, len(self.names)-0.5])
+        plt.locator_params(axis='y', numticks=2)
         if self.ylims is not None:
             plt.ylim(self.ylims)
 
         plt.tight_layout()
-
+        
         if self.fig_outfile is not None:
             plt.savefig(self.fig_outfile)
         plt.show()
@@ -179,6 +180,9 @@ class feature_plot():
             plt.title(sset)
             if self.axis_scale == 'log':
                 plt.xscale('log')
+            plt.xticks([0, 35,70])
+            plt.locator_params(axis='y', numticks=2)
+            # plt.locator_params(axis='x', numticks=2)
 
             if idx == bl:
                 if self.ylab is not None:
@@ -186,12 +190,12 @@ class feature_plot():
                 if self.xlab is not None:
                     plt.xlabel(self.xlab)
 
-                plt.tight_layout()
-
-        plt.suptitle(self.figtitle, y = 1.04, size=20)
-
+        plt.tight_layout()
+        
+        my_suptitle = plt.suptitle(self.figtitle, y = 1.04, size=20)
+        
         if self.fig_outfile is not None:
-            plt.savefig(self.fig_outfile)
+            plt.savefig(self.fig_outfile, bbox_inches='tight',bbox_extra_artists=[my_suptitle])
         plt.show()
         
         
