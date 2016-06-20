@@ -29,7 +29,7 @@ class feature_plot():
 
     def __init__(self, data, names, figtitle, fig_outfile=None, plot_mode='bar',
                  xlab = None, ylab = None, axis_scale = None, yscale = None, xscale = None,
-                 ylims = None, xlims = None, scale_factor = None):
+                 ylims = None, xlims = None, scale_factor = None, color=None):
         """
         Plots multiple populations of histograms in the same figure.
         Expects:
@@ -50,6 +50,7 @@ class feature_plot():
         self.axis_scale = axis_scale
         self.xscale = xscale
         self.yscale = yscale
+        self.color = color
         if plot_mode == 'bar' :
             self.bar_plot()
         elif plot_mode == 'scatter' :
@@ -117,8 +118,10 @@ class feature_plot():
         ax = plt.subplot(1,1,1)
         plt.hold(True)
         for idx, sset in enumerate(self.data.keys()):
-            plt.scatter(self.rand_jitter( [idx]*len(self.data[sset].values()) ),self.data[sset].values(), alpha=0.1, color='#000000')
-
+            if self.color is not None:
+                plt.scatter(self.rand_jitter( [idx]*len(self.data[sset].values()) ),self.data[sset].values(), alpha=0.1, color=self.color[idx])
+            else:
+                plt.scatter(self.rand_jitter( [idx]*len(self.data[sset].values()) ),self.data[sset].values(), alpha=0.1, color='#000000')
         plt.title(self.figtitle, y = 1.04)
         plt.ylabel('Count')
         ax.set_xticks(np.arange(len(self.names)))
@@ -166,14 +169,24 @@ class feature_plot():
             for subj in self.data[sset]['pdfs']:
                 dens = self.data[sset]['pdfs'][subj]
                 x = self.data[sset]['xs'][subj]
-                if self.scale_factor is not None:
-                    plt.plot(x/int(self.scale_factor), dens*int(self.scale_factor), color='#000000', alpha=0.07)
-                elif self.xscale is not None:
-                    plt.plot(x/int(self.xscale), dens, color='#000000', alpha=0.07)
-                elif self.yscale is not None:
-                    plt.plot(x, dens*int(self.yscale), color='#000000', alpha=0.07)
+                if self.color is not None:
+                    if self.scale_factor is not None:
+                        plt.plot(x/int(self.scale_factor), dens*int(self.scale_factor), color=self.color[idx], alpha=0.07)
+                    elif self.xscale is not None:
+                        plt.plot(x/int(self.xscale), dens, color=self.color[idx], alpha=0.07)
+                    elif self.yscale is not None:
+                        plt.plot(x, dens*int(self.yscale), color=self.color[idx], alpha=0.07)
+                    else:
+                        plt.plot(x, dens, color=self.color[idx], alpha=0.07)
                 else:
-                    plt.plot(x, dens, color='#000000', alpha=0.07)
+                    if self.scale_factor is not None:
+                        plt.plot(x/int(self.scale_factor), dens*int(self.scale_factor), color='#000000', alpha=0.07)
+                    elif self.xscale is not None:
+                        plt.plot(x/int(self.xscale), dens, color='#000000', alpha=0.07)
+                    elif self.yscale is not None:
+                        plt.plot(x, dens*int(self.yscale), color='#000000', alpha=0.07)
+                    else:
+                        plt.plot(x, dens, color='#000000', alpha=0.07)
 
             if self.xlims is not None:
                 plt.xlim(self.xlims)
