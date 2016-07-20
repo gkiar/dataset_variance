@@ -29,7 +29,7 @@ class feature_plot():
 
     def __init__(self, data, names, figtitle, fig_outfile=None, plot_mode='bar',
                  xlab = None, ylab = None, axis_scale = None, yscale = None, xscale = None,
-                 ylims = None, xlims = None, scale_factor = None, color=None):
+                 ylims = None, xlims = None, scale_factor = None, color=None, xv=None):
         """
         Plots multiple populations of histograms in the same figure.
         Expects:
@@ -51,6 +51,7 @@ class feature_plot():
         self.xscale = xscale
         self.yscale = yscale
         self.color = color
+        self.xv = xv
         if plot_mode == 'bar' :
             self.bar_plot()
         elif plot_mode == 'scatter' :
@@ -117,17 +118,22 @@ class feature_plot():
         """
         ax = plt.subplot(1,1,1)
         plt.hold(True)
+        maxx = 0
         for idx, sset in enumerate(self.data.keys()):
             if self.color is not None:
                 plt.scatter(self.rand_jitter( [idx]*len(self.data[sset].values()) ),self.data[sset].values(), alpha=0.1, color=self.color[idx])
             else:
                 plt.scatter(self.rand_jitter( [idx]*len(self.data[sset].values()) ),self.data[sset].values(), alpha=0.1, color='#000000')
+            tmax = np.max(self.data[sset].values())
+            if tmax > maxx:
+                maxx = tmax
         plt.title(self.figtitle, y = 1.04)
         plt.ylabel('Count')
         ax.set_xticks(np.arange(len(self.names)))
         ax.set_xticklabels(self.names, rotation=40)
         plt.xlabel('Dataset')
         plt.xlim([-0.5, len(self.names)-0.5])
+        plt.ylim([0, maxx*1.1])
         plt.locator_params(axis='y', numticks=2)
         if self.ylims is not None:
             plt.ylim(self.ylims)
@@ -193,8 +199,9 @@ class feature_plot():
             plt.title(sset)
             if self.axis_scale == 'log':
                 plt.xscale('log')
-            plt.xticks([0, 35,70])
-            plt.locator_params(axis='y', numticks=2)
+            if self.xv is not None:
+                plt.xticks(self.xv)
+                plt.locator_params(axis='y', numticks=2)
             # plt.locator_params(axis='x', numticks=2)
 
             if idx == bl:
@@ -236,23 +243,39 @@ class feature_plot():
         """
         Actually plot things
         """
-        for idx, set in enumerate(self.data.keys()):
+        for idx, sset in enumerate(self.data.keys()):
             ax = plt.subplot(ds[0], ds[-1], idx+1)
             plt.hold(True)
-            for subj in self.data[set]:
-                dens = self.data[set][subj]
-                x = np.linspace(1, len(self.data[set][subj]), len(self.data[set][subj]))
-                if self.scale_factor is not None:
-                    plt.plot(x/int(self.scale_factor), dens*int(self.scale_factor), color='#000000', alpha=0.07)
-                elif self.xscale is not None:
-                    plt.plot(x/int(self.xscale), dens, color='#000000', alpha=0.07)
-                elif self.yscale is not None:
-                    plt.plot(x, dens*int(self.yscale), color='#000000', alpha=0.07)
+            for subj in self.data[sset]:
+                dens = self.data[sset][subj]
+                x = np.linspace(1, len(self.data[sset][subj]), len(self.data[sset][subj]))
+                if self.color is not None:
+                    if self.scale_factor is not None:
+                        plt.plot(x/int(self.scale_factor), dens*int(self.scale_factor), color=self.color[idx], alpha=0.07)
+                    elif self.xscale is not None:
+                        plt.plot(x/int(self.xscale), dens, color=self.color[idx], alpha=0.07)
+                    elif self.yscale is not None:
+                        plt.plot(x, dens*int(self.yscale), color=self.color[idx], alpha=0.07)
+                    else:
+                        plt.plot(x, dens, color=self.color[idx], alpha=0.07)
                 else:
-                    plt.plot(x, dens, color='#000000', alpha=0.07)
-            plt.title(set)
+                    if self.scale_factor is not None:
+                        plt.plot(x/int(self.scale_factor), dens*int(self.scale_factor), color='#000000', alpha=0.07)
+                    elif self.xscale is not None:
+                        plt.plot(x/int(self.xscale), dens, color='#000000', alpha=0.07)
+                    elif self.yscale is not None:
+                        plt.plot(x, dens*int(self.yscale), color='#000000', alpha=0.07)
+                    else:
+                        plt.plot(x, dens, color='#000000', alpha=0.07)
+            if self.xlims is not None:
+                plt.xlim(self.xlims)
+            plt.title(sset)
             if self.axis_scale == 'log':
                 plt.xscale('log')
+            if self.xv is not None:
+                plt.xticks(self.xv)
+                plt.locator_params(axis='y', numticks=2)
+            # plt.locator_params(axis='x', numticks=2)
 
             if idx == bl:
                 if self.ylab is not None:
@@ -260,10 +283,12 @@ class feature_plot():
                 if self.xlab is not None:
                     plt.xlabel(self.xlab)
 
-                plt.tight_layout()
-
+        plt.tight_layout()
+        
+        my_suptitle = plt.suptitle(self.figtitle, y = 1.04, size=20)
+        
         if self.fig_outfile is not None:
-            plt.savefig(self.fig_outfile)
+            plt.savefig(self.fig_outfile, bbox_inches='tight',bbox_extra_artists=[my_suptitle])
         plt.show()
         
         
