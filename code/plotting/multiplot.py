@@ -195,15 +195,19 @@ class feature_plot():
                         plt.plot(x, dens*int(self.yscale), color='#000000', alpha=0.07)
                     else:
                         plt.plot(x, dens, color='#000000', alpha=0.07)
+            if self.xv is not None:
+                if len(self.xv) == len(self.data.keys()):
+                    plt.xticks(self.xv[idx])
+                else:
+                    plt.xticks(self.xv)
 
             if self.xlims is not None:
                 plt.xlim(self.xlims)
-            plt.title(sset)
+            plt.title(self.names[idx])
             if self.axis_scale == 'log':
                 plt.xscale('log')
-            if self.xv is not None:
-                plt.xticks(self.xv)
-                plt.locator_params(axis='y', numticks=2)
+            
+            plt.locator_params(axis='y', numticks=2)
             # plt.locator_params(axis='x', numticks=2)
 
             if idx == bl:
