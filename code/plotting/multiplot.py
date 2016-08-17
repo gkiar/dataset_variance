@@ -135,9 +135,11 @@ class feature_plot():
         plt.xlim([-0.5, len(self.names)-0.5])
         plt.ylim([0, maxx*1.1])
         plt.locator_params(axis='y', numticks=2)
+        if self.axis_scale == 'log':
+            plt.yscale('log')
         if self.ylims is not None:
             plt.ylim(self.ylims)
-
+        
         plt.tight_layout()
         
         if self.fig_outfile is not None:
