@@ -29,7 +29,7 @@ class feature_plot():
 
     def __init__(self, data, names, figtitle, fig_outfile=None, plot_mode='bar',
                  xlab = None, ylab = None, axis_scale = None, yscale = None, xscale = None,
-                 ylims = None, xlims = None, scale_factor = None, color=None, xv=None):
+                 ylims = None, xlims = None, scale_factor = None, color=None, xv=None, size=None):
         """
         Plots multiple populations of histograms in the same figure.
         Expects:
@@ -52,6 +52,7 @@ class feature_plot():
         self.yscale = yscale
         self.color = color
         self.xv = xv
+        self.size = size
         if plot_mode == 'bar' :
             self.bar_plot()
         elif plot_mode == 'scatter' :
@@ -120,23 +121,41 @@ class feature_plot():
         plt.hold(True)
         maxx = 0
         for idx, sset in enumerate(self.data.keys()):
-            if self.color is not None:
-                plt.scatter(self.rand_jitter( [idx]*len(self.data[sset].values()) ),self.data[sset].values(), alpha=0.1, color=self.color[idx])
+            if self.size is not None:
+                val = self.size[idx]
             else:
-                plt.scatter(self.rand_jitter( [idx]*len(self.data[sset].values()) ),self.data[sset].values(), alpha=0.1, color='#000000')
+                val = idx
+
+            if self.color is not None:
+                plt.scatter(self.rand_jitter( [val]*len(self.data[sset].values()) ),self.data[sset].values(), alpha=0.1, color=self.color[idx])
+            else:
+                plt.scatter(self.rand_jitter( [val]*len(self.data[sset].values()) ),self.data[sset].values(), alpha=0.1, color='#000000')
             tmax = np.max(self.data[sset].values())
             if tmax > maxx:
                 maxx = tmax
         plt.title(self.figtitle, y = 1.04)
         plt.ylabel('Count')
-        ax.set_xticks(np.arange(len(self.names)))
-        ax.set_xticklabels(self.names, rotation=40)
-        plt.xlabel('Dataset')
-        plt.xlim([-0.5, len(self.names)-0.5])
+        if self.xlab is not None:
+            plt.xlabel(self.xlab)
+        else:
+            plt.xlabel('Dataset')
+        if self.size is None:
+            ax.set_xticks(np.arange(len(self.names)))
+            ax.set_xticklabels(self.names, rotation=40)
+            plt.xlim([-0.5, len(self.names)-0.5])
+        else:
+            ax.set_xticks([self.size[0], int(np.mean(self.size)), self.size[-1]])
+            # ax.set_xticklabels(self.names, rotation=40)
+            # plt.xlim([-0.5, len(self.names)-0.5])
+        
         plt.ylim([0, maxx*1.1])
         plt.locator_params(axis='y', numticks=2)
         if self.axis_scale == 'log':
-            plt.yscale('log')
+            if self.size is None:
+                plt.yscale('log')
+            else:
+                plt.xscale('log')
+                plt.yscale('log')
         if self.ylims is not None:
             plt.ylim(self.ylims)
         
