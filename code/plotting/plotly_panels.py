@@ -25,8 +25,26 @@ from itertools import product
 from plotly.graph_objs import *
 from plotly import tools
 
+def plot_series(dats, name=None, ylab=None, xlab=None):
+    data = list()
+    for idx, ys in enumerate(dats):
+        data += [
+                 Scatter(
+                         x=np.linspace(1, len(ys)),
+                         y=ys,
+                         line=Line(
+                                   color='rgba(0,0,0,%1.2f)' % (7.0/len(dats))
+                                  ),
+                         hoverinfo='x',
+                         name=name,
+                        )
+                ]
+    layout = std_layout(name, ylab, xlab)
+    fig = Figure(data=data, layout=layout)
+    return fig
 
-def plot_density(xs, ys, name=None):
+
+def plot_density(xs, ys, name=None, ylab=None, xlab=None):
     data = list()
     for idx, x in enumerate(xs):
         data += [
@@ -34,17 +52,18 @@ def plot_density(xs, ys, name=None):
                          x=xs[idx],
                          y=ys[idx],
                          line=Line(
-                                   color='rgba(0,0,0,0.05)'
+                                   color='rgba(0,0,0,%1.2f)' % (7.0/len(ys))
                                   ),
                          hoverinfo='x',
-                         name=name
+                         name=name,
                         )
                 ]
-    layout = std_layout(name)
+    layout = std_layout(name, ylab, xlab)
     fig = Figure(data=data, layout=layout)
     return fig
-    
-def plot_rugdensity(series, name=None):
+
+
+def plot_rugdensity(series, name=None, ylab=None, xlab=None):
     dens = gaussian_kde(series)
     x = np.linspace(np.min(series), np.max(series), 1000)
     y = dens.evaluate(x)
@@ -53,17 +72,17 @@ def plot_rugdensity(series, name=None):
                 x=x,
                 y=y,
                 line=Line(
-                       color='rgb(0,0,0)'
+                       color='rgba(0,0,0,0.9)'
                      ),
                 hoverinfo='x',
-                name=name
+                name=name,
            )
     d_rug = Scatter(
                 x=series,
                 y=[0]*len(series),
                 mode='markers',
                 marker=Marker(
-                         color='rgb(0,0,0)',
+                         color='rgba(0,0,0,0.9)',
                          symbol='line-ns-open',
                          size=10,
                          opacity=0.5
@@ -71,18 +90,21 @@ def plot_rugdensity(series, name=None):
                 name=name
           )
     data = [d_dens, d_rug]
-    layout = std_layout(name)
+    layout = std_layout(name, ylab, xlab)
     fig = Figure(data=data, layout=layout)
     return fig
 
 
-def std_layout(name=None):
+def std_layout(name=None, ylab=None, xlab=None):
     return Layout(
             title=name,
             showlegend=False,
-            xaxis={'nticks':5},
-            yaxis={'nticks':3}
+            xaxis={'nticks':5,
+                   'title':xlab},
+            yaxis={'nticks':3,
+                   'title':ylab}
           )
+
 
 def fig_to_trace(fig):
     data = fig['data']
@@ -92,7 +114,7 @@ def fig_to_trace(fig):
     return data
 
 
-def traces_to_panels(traces, names=[]):
+def traces_to_panels(traces, names=[], ylabs=None, xlabs=None):
     r, c, locs = panel_arrangement(len(traces))
     multi = tools.make_subplots(rows=r, cols=c, subplot_titles=names)
     for idx, loc in enumerate(locs):
@@ -130,6 +152,7 @@ def panel_invisible(plot, idx):
         plot.layout[axe]['showline'] = False
         plot.layout[axe]['showticklabels'] = False
     return plot
+
 
 def rand_jitter(arr):
     stdev = .03*(max(arr)-min(arr)+2)
